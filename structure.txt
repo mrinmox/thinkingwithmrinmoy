@@ -1,0 +1,11 @@
+your-website/
+├── index.html (homepage with article list)
+├── about.html (about page)
+├── articles/
+│   ├── article1.html
+│   ├── article2.html
+│   └── ...
+└── images/
+    ├── image1.jpg
+    ├── image2.jpg
+    └── ...
