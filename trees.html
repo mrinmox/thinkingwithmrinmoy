@@ -1,32 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Tree Census Map</title>
+  <meta charset="utf-8">
+  <title>Tree Census Map with Heatmap</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Mapbox CSS -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
-
   <style>
-    body { margin:0; font-family: sans-serif; }
-    #map { width:100%; height:500px; border:1px solid #ccc; }
+    body { margin:0; padding:0; }
+    #map { width:100%; height:100vh; }
     .control-panel {
       position:absolute;
       top:10px; left:10px;
       background:white; padding:10px;
       border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.3);
-      z-index:1;
+      font-family: sans-serif;
+      z-index: 1;
     }
   </style>
 </head>
 <body>
 
-<h1>Tree Census Map</h1>
-<p>Explore the trees and their health status.</p>
-
 <div id="map"></div>
-
 <div class="control-panel">
   <label>Filter by health:</label>
   <select id="healthFilter">
@@ -39,32 +34,55 @@
   <label><input type="checkbox" id="toggleHeatmap"> Show Heatmap</label>
 </div>
 
-<!-- Mapbox JS -->
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-
 <script>
-  mapboxgl.accessToken = 'pk.eyJ1IjoibXJpbm1veCIsImEiOiJjbWY5cXhleXMwd2R6MmxzNmY4OTZla3V3In0.9JIRFmc9sorWSsf5Fa_upQ'; // ⬅️ Replace this
+  mapboxgl.accessToken = 'pk.eyJ1IjoibXJpbm1veCIsImEiOiJjbWY5cXhleXMwd2R6MmxzNmY4OTZla3V3In0.9JIRFmc9sorWSsf5Fa_upQ'; // ⬅️ Replace with your token
 
+  
   const map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/satellite-streets-v12',
-    center: [77.59, 12.97],
+    style: 'mapbox://styles/mapbox/satellite-streets-v9', // 🌍 Satellite + streets
+    // or use 'mapbox://styles/mapbox/satellite-v9' for pure satellite
+    center: [77.59, 12.97], // Example: Bangalore
     zoom: 13
   });
 
-  // Insert your treeData GeoJSON here (20 trees or more)
-  const treeData = { /* ... your features ... */ };
+const treeData = {
+    "type": "FeatureCollection",
+    "features": [
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.594, 12.971] }, "properties": { "species": "Neem", "condition": "healthy", "crown": 12, "last_inspection": "2025-07-15" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.592, 12.973] }, "properties": { "species": "Banyan", "condition": "stressed", "crown": 18, "last_inspection": "2025-06-01" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.596, 12.969] }, "properties": { "species": "Mango", "condition": "diseased", "crown": 10, "last_inspection": "2025-08-12" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.598, 12.972] }, "properties": { "species": "Peepal", "condition": "healthy", "crown": 15, "last_inspection": "2025-07-01" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.591, 12.970] }, "properties": { "species": "Ashoka", "condition": "stressed", "crown": 9, "last_inspection": "2025-07-10" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.593, 12.968] }, "properties": { "species": "Neem", "condition": "healthy", "crown": 11, "last_inspection": "2025-06-18" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.597, 12.974] }, "properties": { "species": "Banyan", "condition": "diseased", "crown": 20, "last_inspection": "2025-08-01" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.599, 12.969] }, "properties": { "species": "Mango", "condition": "healthy", "crown": 13, "last_inspection": "2025-07-25" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.590, 12.972] }, "properties": { "species": "Peepal", "condition": "stressed", "crown": 16, "last_inspection": "2025-08-03" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.595, 12.975] }, "properties": { "species": "Ashoka", "condition": "healthy", "crown": 8, "last_inspection": "2025-07-30" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.592, 12.967] }, "properties": { "species": "Neem", "condition": "diseased", "crown": 14, "last_inspection": "2025-07-20" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.596, 12.966] }, "properties": { "species": "Mango", "condition": "healthy", "crown": 10, "last_inspection": "2025-08-05" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.593, 12.974] }, "properties": { "species": "Banyan", "condition": "stressed", "crown": 17, "last_inspection": "2025-06-28" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.594, 12.968] }, "properties": { "species": "Peepal", "condition": "healthy", "crown": 19, "last_inspection": "2025-07-22" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.590, 12.969] }, "properties": { "species": "Ashoka", "condition": "diseased", "crown": 7, "last_inspection": "2025-06-10" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.598, 12.975] }, "properties": { "species": "Neem", "condition": "stressed", "crown": 12, "last_inspection": "2025-07-05" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.599, 12.971] }, "properties": { "species": "Mango", "condition": "healthy", "crown": 14, "last_inspection": "2025-07-29" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.591, 12.974] }, "properties": { "species": "Banyan", "condition": "diseased", "crown": 22, "last_inspection": "2025-08-06" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.595, 12.967] }, "properties": { "species": "Peepal", "condition": "healthy", "crown": 15, "last_inspection": "2025-07-18" }},
+      { "type": "Feature", "geometry": { "type": "Point", "coordinates": [77.597, 12.968] }, "properties": { "species": "Ashoka", "condition": "stressed", "crown": 9, "last_inspection": "2025-08-02" }}
+    ]
+  };
 
   map.on('load', () => {
+    // Add data source with clustering
     map.addSource('trees', {
       type: 'geojson',
       data: treeData,
       cluster: true,
       clusterMaxZoom: 14,
-      clusterRadius: 50
+      clusterRadius: 10
     });
 
-    // Clusters
+    // Clustered circles
     map.addLayer({
       id: 'clusters',
       type: 'circle',
@@ -77,70 +95,105 @@
       }
     });
 
-    // Cluster count
+    // Cluster count labels
     map.addLayer({
       id: 'cluster-count',
       type: 'symbol',
       source: 'trees',
       filter: ['has', 'point_count'],
-      layout: { 'text-field': '{point_count_abbreviated}', 'text-size': 12 }
+      layout: {
+        'text-field': '{point_count_abbreviated}',
+        'text-size': 12
+      }
     });
 
-    // Individual trees
+    // Individual tree points
     map.addLayer({
       id: 'unclustered-point',
       type: 'circle',
       source: 'trees',
       filter: ['!', ['has', 'point_count']],
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['get', 'crown'], 5, 6, 20, 15],
-        'circle-color': ['match', ['get', 'condition'], 'healthy','#2ecc71','stressed','#f1c40f','diseased','#e74c3c','#95a5a6'],
+        'circle-radius': [
+          'interpolate', ['linear'], ['get', 'crown'],
+          5, 6,
+          20, 15
+        ],
+        'circle-color': [
+          'match', ['get', 'condition'],
+          'healthy', '#2ecc71',
+          'stressed', '#f1c40f',
+          'diseased', '#e74c3c',
+          '#95a5a6'
+        ],
         'circle-stroke-color': '#000',
-        'circle-stroke-width': 1
+        'circle-stroke-width': 0
       }
     });
 
-    // Popups
-    map.on('click', 'unclustered-point', e => {
+    // Popup for tree details
+    map.on('click', 'unclustered-point', (e) => {
       const props = e.features[0].properties;
       new mapboxgl.Popup()
         .setLngLat(e.lngLat)
-        .setHTML(`<b>Species:</b> ${props.species}<br><b>Condition:</b> ${props.condition}<br><b>Crown Spread:</b> ${props.crown} m<br><b>Last Inspection:</b> ${props.last_inspection}`)
+        .setHTML(
+          `<b>Species:</b> ${props.species}<br>
+           <b>Condition:</b> ${props.condition}<br>
+           <b>Crown Spread:</b> ${props.crown} m<br>
+           <b>Last Inspection:</b> ${props.last_inspection}`
+        )
         .addTo(map);
     });
 
-    // Heatmap
+    // Heatmap layer (hidden by default)
     map.addLayer({
       id: 'trees-heat',
       type: 'heatmap',
       source: 'trees',
       maxzoom: 15,
       paint: {
-        'heatmap-weight': ['interpolate', ['linear'], ['get', 'crown'], 5, 0.2, 20, 1],
+        'heatmap-weight': [
+          'interpolate', ['linear'], ['get', 'crown'],
+          5, 0.2,
+          20, 1
+        ],
         'heatmap-intensity': 1,
-        'heatmap-color': ['interpolate',['linear'],['heatmap-density'],0,'rgba(0,0,0,0)',0.2,'blue',0.4,'cyan',0.6,'lime',0.8,'yellow',1,'red'],
+        'heatmap-color': [
+          'interpolate', ['linear'], ['heatmap-density'],
+          0, "rgba(0,0,0,0)",
+          0.2, "blue",
+          0.4, "cyan",
+          0.6, "lime",
+          0.8, "yellow",
+          1, "red"
+        ],
         'heatmap-radius': 40,
         'heatmap-opacity': 0
       }
     });
 
-    document.getElementById('toggleHeatmap').addEventListener('change', e => {
+    // Toggle heatmap
+    document.getElementById('toggleHeatmap').addEventListener('change', (e) => {
       const show = e.target.checked;
       map.setPaintProperty('trees-heat', 'heatmap-opacity', show ? 0.6 : 0);
-      map.setLayoutProperty('clusters','visibility', show ? 'none' : 'visible');
-      map.setLayoutProperty('cluster-count','visibility', show ? 'none' : 'visible');
-      map.setLayoutProperty('unclustered-point','visibility', show ? 'none' : 'visible');
+      map.setLayoutProperty('clusters', 'visibility', show ? 'none' : 'visible');
+      map.setLayoutProperty('cluster-count', 'visibility', show ? 'none' : 'visible');
+      map.setLayoutProperty('unclustered-point', 'visibility', show ? 'none' : 'visible');
     });
 
-    document.getElementById('healthFilter').addEventListener('change', e => {
+    // Health filter
+    document.getElementById('healthFilter').addEventListener('change', (e) => {
       const value = e.target.value;
-      if(value==='all'){
-        map.setFilter('unclustered-point',['!',['has','point_count']]);
+      if (value === 'all') {
+        map.setFilter('unclustered-point', ['!', ['has', 'point_count']]);
       } else {
-        map.setFilter('unclustered-point',['all',['!',['has','point_count']],['==',['get','condition'],value]]);
+        map.setFilter('unclustered-point', [
+          'all',
+          ['!', ['has', 'point_count']],
+          ['==', ['get', 'condition'], value]
+        ]);
       }
     });
-
   });
 </script>
 
