@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tree Census Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Mapbox CSS -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+
+  <style>
+    body { margin:0; font-family: sans-serif; }
+    #map { width:100%; height:500px; border:1px solid #ccc; }
+    .control-panel {
+      position:absolute;
+      top:10px; left:10px;
+      background:white; padding:10px;
+      border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.3);
+      z-index:1;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Tree Census Map</h1>
+<p>Explore the trees and their health status.</p>
+
+<div id="map"></div>
+
+<div class="control-panel">
+  <label>Filter by health:</label>
+  <select id="healthFilter">
+    <option value="all">All</option>
+    <option value="healthy">Healthy</option>
+    <option value="stressed">Stressed</option>
+    <option value="diseased">Diseased</option>
+  </select>
+  <br><br>
+  <label><input type="checkbox" id="toggleHeatmap"> Show Heatmap</label>
+</div>
+
+<!-- Mapbox JS -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoibXJpbm1veCIsImEiOiJjbWY5cXhleXMwd2R6MmxzNmY4OTZla3V3In0.9JIRFmc9sorWSsf5Fa_upQ'; // ⬅️ Replace this
+
+  const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-streets-v12',
+    center: [77.59, 12.97],
+    zoom: 13
+  });
+
+  // Insert your treeData GeoJSON here (20 trees or more)
+  const treeData = { /* ... your features ... */ };
+
+  map.on('load', () => {
+    map.addSource('trees', {
+      type: 'geojson',
+      data: treeData,
+      cluster: true,
+      clusterMaxZoom: 14,
+      clusterRadius: 50
+    });
+
+    // Clusters
+    map.addLayer({
+      id: 'clusters',
+      type: 'circle',
+      source: 'trees',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': '#2ecc71',
+        'circle-radius': ['step', ['get', 'point_count'], 20, 10, 30, 30, 40],
+        'circle-opacity': 0.6
+      }
+    });
+
+    // Cluster count
+    map.addLayer({
+      id: 'cluster-count',
+      type: 'symbol',
+      source: 'trees',
+      filter: ['has', 'point_count'],
+      layout: { 'text-field': '{point_count_abbreviated}', 'text-size': 12 }
+    });
+
+    // Individual trees
+    map.addLayer({
+      id: 'unclustered-point',
+      type: 'circle',
+      source: 'trees',
+      filter: ['!', ['has', 'point_count']],
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['get', 'crown'], 5, 6, 20, 15],
+        'circle-color': ['match', ['get', 'condition'], 'healthy','#2ecc71','stressed','#f1c40f','diseased','#e74c3c','#95a5a6'],
+        'circle-stroke-color': '#000',
+        'circle-stroke-width': 1
+      }
+    });
+
+    // Popups
+    map.on('click', 'unclustered-point', e => {
+      const props = e.features[0].properties;
+      new mapboxgl.Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(`<b>Species:</b> ${props.species}<br><b>Condition:</b> ${props.condition}<br><b>Crown Spread:</b> ${props.crown} m<br><b>Last Inspection:</b> ${props.last_inspection}`)
+        .addTo(map);
+    });
+
+    // Heatmap
+    map.addLayer({
+      id: 'trees-heat',
+      type: 'heatmap',
+      source: 'trees',
+      maxzoom: 15,
+      paint: {
+        'heatmap-weight': ['interpolate', ['linear'], ['get', 'crown'], 5, 0.2, 20, 1],
+        'heatmap-intensity': 1,
+        'heatmap-color': ['interpolate',['linear'],['heatmap-density'],0,'rgba(0,0,0,0)',0.2,'blue',0.4,'cyan',0.6,'lime',0.8,'yellow',1,'red'],
+        'heatmap-radius': 40,
+        'heatmap-opacity': 0
+      }
+    });
+
+    document.getElementById('toggleHeatmap').addEventListener('change', e => {
+      const show = e.target.checked;
+      map.setPaintProperty('trees-heat', 'heatmap-opacity', show ? 0.6 : 0);
+      map.setLayoutProperty('clusters','visibility', show ? 'none' : 'visible');
+      map.setLayoutProperty('cluster-count','visibility', show ? 'none' : 'visible');
+      map.setLayoutProperty('unclustered-point','visibility', show ? 'none' : 'visible');
+    });
+
+    document.getElementById('healthFilter').addEventListener('change', e => {
+      const value = e.target.value;
+      if(value==='all'){
+        map.setFilter('unclustered-point',['!',['has','point_count']]);
+      } else {
+        map.setFilter('unclustered-point',['all',['!',['has','point_count']],['==',['get','condition'],value]]);
+      }
+    });
+
+  });
+</script>
+
+</body>
+</html>
