@@ -20,7 +20,17 @@ const articles = [
     link: "articles/reflections.html",
     image: "images/klara.jpeg",
     preview: "Every thought leaves an imprint. This article explores how self-reflection fuels creativity and growth."
+  },
+ 
+  {
+    date: "February 2, 2025",
+    title: "My New Article",                 // 👈 title here
+    link: "articles/my-new-article.html",    // 👈 link to the file you created
+    image: "images/klara.jpeg",              // 👈 image path (optional)
+    preview: "This is a short preview of my new article." // 👈 small intro
   }
+
+
 ];
 
 // 📌 Select the container in index.html where articles will be added
